@@ -8,7 +8,7 @@ skill:
   type: prompt
   entrypoint:
     kind: markdown
-    path: resources/prompt.md
+    path: resources/manifest/A5-Automate/prompt.md
   description: 6A阶段5执行（Automate）：按任务依赖顺序实施、测试、验证并同步文档。
   tags:
     - 6A

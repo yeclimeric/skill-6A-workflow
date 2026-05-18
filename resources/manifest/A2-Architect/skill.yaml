@@ -8,7 +8,7 @@ skill:
   type: prompt
   entrypoint:
     kind: markdown
-    path: resources/prompt.md
+    path: resources/manifest/A2-Architect/prompt.md
   description: 6A阶段2架构（Architect）：输出系统架构、模块设计、接口契约与异常策略。
   tags:
     - 6A

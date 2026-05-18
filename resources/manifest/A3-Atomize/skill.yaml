@@ -8,7 +8,7 @@ skill:
   type: prompt
   entrypoint:
     kind: markdown
-    path: resources/prompt.md
+    path: resources/manifest/A3-Atomize/prompt.md
   description: 6A阶段3原子化（Atomize）：输出可独立验证的任务拆分与依赖关系。
   tags:
     - 6A

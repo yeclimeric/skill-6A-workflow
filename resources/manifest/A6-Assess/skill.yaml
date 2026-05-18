@@ -8,7 +8,7 @@ skill:
   type: prompt
   entrypoint:
     kind: markdown
-    path: resources/prompt.md
+    path: resources/manifest/A6-Assess/prompt.md
   description: 6A阶段6评估（Assess）：输出验收结论、质量评估与最终交付物清单。
   tags:
     - 6A

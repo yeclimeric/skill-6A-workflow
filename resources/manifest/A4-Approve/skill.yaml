@@ -8,7 +8,7 @@ skill:
   type: prompt
   entrypoint:
     kind: markdown
-    path: resources/prompt.md
+    path: resources/manifest/A4-Approve/prompt.md
   description: 6A阶段4审批（Approve）：输出可执行检查清单与最终确认清单。
   tags:
     - 6A

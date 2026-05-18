@@ -8,7 +8,7 @@ skill:
   type: prompt
   entrypoint:
     kind: markdown
-    path: resources/prompt.md
+    path: resources/manifest/A1-Align/prompt.md
   description: 6A阶段1对齐（Align）：输出精确规范与可测试验收标准。
   tags:
     - 6A
