@@ -1,0 +1,14 @@
+schema_id: 6a.skill.index.v1
+skills:
+  - stage: A1
+    path: manifest/A1/skill.yaml
+  - stage: A2
+    path: manifest/A2/skill.yaml
+  - stage: A3
+    path: manifest/A3/skill.yaml
+  - stage: A4
+    path: manifest/A4/skill.yaml
+  - stage: A5
+    path: manifest/A5/skill.yaml
+  - stage: A6
+    path: manifest/A6/skill.yaml

@@ -1,0 +1,6 @@
+repo_root: /Users/eric/Public/work/code/demo-repo
+task_name: 批量导入
+raw_requirement: "需要在现有后台增加CSV批量导入用户功能，包含模板下载、导入预校验、导入结果分页查看。"
+stage: S4
+docs_root: docs
+docs_dir_prefix_width: 2

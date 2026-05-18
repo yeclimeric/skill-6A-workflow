@@ -1,0 +1,190 @@
+schema_id: 6a.skill.spec.v1
+skill:
+  name: skill-6a-workflow-a3
+  display_name: 6A-A3-拆分
+  version: 1.0.0
+  stage: A3
+  language: zh-CN
+  type: prompt
+  entrypoint:
+    kind: markdown
+    path: docs/source/6A.md
+  description: 6A阶段3原子化（Atomize）：输出可独立验证的任务拆分与依赖关系。
+  tags:
+    - 6A
+    - A3
+    - atomize
+contract:
+  input_schema:
+    type: object
+    additionalProperties: false
+    required: [repo_root, task_name, raw_requirement, stage]
+    properties:
+      repo_root:
+        type: string
+        pattern: "^/.*"
+        description: 代码仓库根目录绝对路径
+      task_name:
+        type: string
+        minLength: 1
+        maxLength: 64
+        pattern: "^[^/\\\\]+$"
+        description: 任务名（用于生成docs子目录名）
+      raw_requirement:
+        type: string
+        minLength: 1
+        maxLength: 20000
+        description: 用户原始需求文本
+      stage:
+        type: string
+        enum: ["S3"]
+        description: 目标阶段
+      docs_root:
+        type: string
+        default: docs
+        pattern: "^[^/\\\\]+$"
+        description: 文档根目录名
+      docs_dir_prefix_width:
+        type: integer
+        default: 2
+        enum: [2, 3]
+        description: docs一级子目录序号宽度
+  output_schema:
+    type: object
+    additionalProperties: false
+    required: [stage, docs_dir, generated_files]
+    properties:
+      stage:
+        type: string
+        enum: ["S3"]
+      docs_dir:
+        type: string
+        pattern: "^/.*"
+        description: 本次阶段交付物所在目录绝对路径
+      generated_files:
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required: [path, kind]
+          properties:
+            path:
+              type: string
+              pattern: "^/.*"
+            kind:
+              type: string
+              enum: [markdown]
+scenarios:
+  enabled:
+    - id: sw_task_atomize
+      description: 需要将架构设计拆分为原子任务，定义输入输出契约与依赖图
+    - id: sw_parallel_planning
+      description: 需要识别并行任务、后置任务与依赖顺序
+  disabled:
+    - id: illegal_or_sensitive
+      description: 违法违规、涉密、绕过安全控制、索取密钥/账号等请求
+    - id: non_software_request
+      description: 非软件研发交付（如纯运营文案、纯设计、纯法务）
+exceptions:
+  - code: E6A001
+    name: INVALID_REPO_ROOT
+    when: repo_root非绝对路径或目录不存在
+    fallback: 返回错误并要求提供存在的绝对路径；不写入任何文件
+  - code: E6A002
+    name: DOCS_DIR_CONFLICT
+    when: docs目录序号生成冲突或目标目录不可写
+    fallback: 改用下一个可用序号；若仍失败，停止并输出需人工处理的路径清单
+  - code: E6A003
+    name: PREREQ_DOC_MISSING
+    when: 缺少S2-DESIGN
+    fallback: 输出缺失文件清单；标记BLOCKED；等待补齐
+  - code: E6A004
+    name: TASK_DEP_CYCLE
+    when: 任务依赖关系存在循环
+    fallback: 返回循环依赖路径；要求调整拆分后重试
+workflow_6a:
+  activation:
+    trigger:
+      prefix: "6A"
+    on_activate_response: "6A工作流已激活"
+  identity:
+    role: "资深的软件架构师和工程师"
+    core_advantages:
+      - 上下文工程专家：构建完整的任务上下文，而非简单的提示响应
+      - 规范驱动思维：将模糊需求转化为精确、可执行的规范
+      - 质量优先理念：每个阶段都确保高质量输出
+      - 项目对齐能力：深度理解现有项目架构和约束
+  execution_rules:
+    stage3_atomize:
+      goal: "架构设计 → 拆分任务 → 明确接口 → 依赖关系"
+      steps:
+        - id: S3.1
+          name: 子任务拆分
+          items:
+            - 基于DESIGN文档生成docs/任务名/S3-TASK.md
+            - 每个原子任务包含输入契约（前置依赖、输入数据、环境依赖）
+            - 每个原子任务包含输出契约（输出数据、交付物、验收标准）
+            - 每个原子任务包含实现约束（技术栈、接口规范、质量要求）
+            - 每个原子任务包含依赖关系（后置任务、并行任务）
+        - id: S3.2
+          name: 拆分原则
+          items:
+            - 复杂度可控，便于AI高成功率交付
+            - 按功能模块分解，确保任务原子性和独立性
+            - 有明确的验收标准，尽量可以独立编译和测试
+            - 依赖关系清晰
+        - id: S3.3
+          name: 生成任务依赖图
+          items:
+            - 使用mermaid
+      quality_gates:
+        - 任务覆盖完整需求
+        - 依赖关系无循环
+        - 每个任务都可独立验证
+        - 复杂度评估合理
+technical_execution_spec:
+  security:
+    rules:
+      - API密钥等敏感信息使用.env文件管理
+  docs_sync:
+    rules:
+      - docs目录下依据6A工作规范创建的文件夹前面需要加上序号，序号为docs目录下一级子目录最大序号+1，序号起始为00
+      - 代码变更同时更新相关文档
+  testing_strategy:
+    rules:
+      - 测试优先：先写测试，后写实现
+      - 边界覆盖：覆盖正常流程、边界条件、异常情况
+  interaction_ux:
+    rules:
+      - 进度反馈
+      - 显示当前执行阶段
+      - 提供详细的执行步骤
+      - 标示完成情况
+      - 突出需要关注的问题
+  exception_handling:
+    interrupt_conditions:
+      - 遇到无法自主决策的问题
+      - 觉得需要询问用户的问题
+      - 技术实现出现阻塞
+      - 文档不一致需要确认修正
+    recovery_strategy:
+      - 保存当前执行状态
+      - 记录问题详细信息
+      - 询问并等待人工干预
+      - 从中断点任务继续执行
+examples:
+  - title: A3入参出参
+    input:
+      repo_root: /Users/eric/Public/work/code/demo-repo
+      task_name: 批量导入
+      raw_requirement: "需要在现有后台增加CSV批量导入用户功能，包含模板下载、导入预校验、导入结果分页查看。"
+      stage: S3
+      docs_root: docs
+      docs_dir_prefix_width: 2
+    output:
+      stage: S3
+      docs_dir: /Users/eric/Public/work/code/demo-repo/docs/00-批量导入
+      generated_files:
+        - path: /Users/eric/Public/work/code/demo-repo/docs/00-批量导入/S3-TASK.md
+          kind: markdown
