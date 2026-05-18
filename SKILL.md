@@ -40,7 +40,8 @@ permissions:
 ## 执行指示（Instructions）
 - 目录命名规则：resources/manifest/common/docs_dir_naming.yaml
 - 阶段清单索引：resources/manifest/index.yaml
-- 阶段规范与步骤：resources/manifest/A*-*/prompt.md（按stage路由），总览索引resources/prompt.md
+- 公共prompt：resources/prompt.md
+- 阶段prompt：resources/manifest/A*-*/prompt.md（按stage路由）
 
 ## 调用与触发流程图
 ```mermaid
