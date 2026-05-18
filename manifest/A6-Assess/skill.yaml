@@ -126,7 +126,7 @@ workflow_6a:
         - id: S6.1
           name: 验证执行结果
           items:
-            - 更新docs/任务名/S6-ACCEPTANCE.md
+            - 更新docs/任务名/6A-S6-ACCEPTANCE.md
             - 整体验收检查：所有需求已实现
             - 整体验收检查：验收标准全部满足
             - 整体验收检查：项目编译通过
@@ -144,8 +144,8 @@ workflow_6a:
         - id: S6.3
           name: 最终交付物
           items:
-            - 生成docs/任务名/S6-FINAL_[任务名].md
-            - 生成docs/任务名/S6-TODO_[任务名].md
+            - 生成docs/任务名/6A-S6-FINAL_[任务名].md
+            - 生成docs/任务名/6A-S6-TODO_[任务名].md
         - id: S6.4
           name: TODO询问
           items:
@@ -159,6 +159,7 @@ technical_execution_spec:
   docs_sync:
     rules:
       - docs_dir命名使用docs_dir_naming，模板{seq}-{stage_full}-{task_name}
+      - 文档文件名前缀使用docs_dir_naming.rules.doc_file_prefix
       - 代码变更同时更新相关文档
   testing_strategy:
     rules:
@@ -195,9 +196,9 @@ examples:
       stage: S6
       docs_dir: /Users/eric/Public/work/code/demo-repo/docs/00-A6-Assess-批量导入
       generated_files:
-        - path: /Users/eric/Public/work/code/demo-repo/docs/00-A6-Assess-批量导入/S6-ACCEPTANCE.md
+        - path: /Users/eric/Public/work/code/demo-repo/docs/00-A6-Assess-批量导入/6A-S6-ACCEPTANCE.md
           kind: markdown
-        - path: /Users/eric/Public/work/code/demo-repo/docs/00-A6-Assess-批量导入/S6-FINAL_批量导入.md
+        - path: /Users/eric/Public/work/code/demo-repo/docs/00-A6-Assess-批量导入/6A-S6-FINAL_批量导入.md
           kind: markdown
-        - path: /Users/eric/Public/work/code/demo-repo/docs/00-A6-Assess-批量导入/S6-TODO_批量导入.md
+        - path: /Users/eric/Public/work/code/demo-repo/docs/00-A6-Assess-批量导入/6A-S6-TODO_批量导入.md
           kind: markdown

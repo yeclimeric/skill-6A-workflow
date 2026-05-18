@@ -54,6 +54,7 @@ rules:
     A5: A5-Automate
     A6: A6-Assess
   docs_dir_name_template: "{seq}-{stage_full}-{task_name}"
+  doc_file_prefix: "6A-"
   seq_source: "docs_root下一级子目录最大序号+1"
   seq_start: 0
   seq_pad:

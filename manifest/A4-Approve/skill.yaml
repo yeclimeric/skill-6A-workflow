@@ -146,6 +146,7 @@ technical_execution_spec:
   docs_sync:
     rules:
       - docs_dir命名使用docs_dir_naming，模板{seq}-{stage_full}-{task_name}
+      - 文档文件名前缀使用docs_dir_naming.rules.doc_file_prefix
       - 代码变更同时更新相关文档
   testing_strategy:
     rules:
@@ -182,5 +183,5 @@ examples:
       stage: S4
       docs_dir: /Users/eric/Public/work/code/demo-repo/docs/00-A4-Approve-批量导入
       generated_files:
-        - path: /Users/eric/Public/work/code/demo-repo/docs/00-A4-Approve-批量导入/S4-CHECKLIST.md
+        - path: /Users/eric/Public/work/code/demo-repo/docs/00-A4-Approve-批量导入/6A-S4-CHECKLIST.md
           kind: markdown

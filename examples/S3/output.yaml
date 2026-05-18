@@ -1,5 +1,5 @@
 stage: S3
 docs_dir: /Users/eric/Public/work/code/demo-repo/docs/00-A3-Atomize-批量导入
 generated_files:
-  - path: /Users/eric/Public/work/code/demo-repo/docs/00-A3-Atomize-批量导入/S3-TASK.md
+  - path: /Users/eric/Public/work/code/demo-repo/docs/00-A3-Atomize-批量导入/6A-S3-TASK.md
     kind: markdown
