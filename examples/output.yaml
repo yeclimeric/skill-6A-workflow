@@ -1,0 +1,7 @@
+stage: S1
+docs_dir: /Users/eric/Public/work/code/demo-repo/docs/00-批量导入
+generated_files:
+  - path: /Users/eric/Public/work/code/demo-repo/docs/00-批量导入/S1-ALIGNMENT.md
+    kind: markdown
+  - path: /Users/eric/Public/work/code/demo-repo/docs/00-批量导入/S1-CONSENSUS.md
+    kind: markdown
