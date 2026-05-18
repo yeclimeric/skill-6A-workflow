@@ -139,7 +139,7 @@ workflow_6a:
         - id: S1.2
           name: 需求理解确认
           items:
-            - 创建docs/任务名/6A-S1-ALIGNMENT.md
+            - 创建docs/任务名/S1-ALIGNMENT.md
             - 包含项目和任务特性规范
             - 包含原始需求、边界确认、需求理解、疑问澄清
         - id: S1.3
@@ -157,7 +157,7 @@ workflow_6a:
         - id: S1.5
           name: 最终共识
           items:
-            - 生成docs/XX-任务名/6A-S1-CONSENSUS.md
+            - 生成docs/XX-任务名/S1-CONSENSUS.md
             - 包含明确的需求描述和验收标准
             - 包含技术实现方案和技术约束和集成方案
             - 包含任务边界限制和验收标准
@@ -174,8 +174,7 @@ technical_execution_spec:
       - API密钥等敏感信息使用.env文件管理
   docs_sync:
     rules:
-      - docs_dir命名使用docs_dir_naming，模板{seq}-{stage_full}-{task_name}
-      - 文档文件名前缀使用docs_dir_naming.rules.doc_file_prefix
+      - docs_dir命名使用docs_dir_naming，模板6A-{seq}-{stage_full}_{task_name}
       - 代码变更同时更新相关文档
   testing_strategy:
     rules:
@@ -210,9 +209,9 @@ examples:
       docs_dir_prefix_width: 2
     output:
       stage: S1
-      docs_dir: /Users/eric/Public/work/code/demo-repo/docs/00-A1-Align-批量导入
+      docs_dir: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A1-Align_批量导入
       generated_files:
-        - path: /Users/eric/Public/work/code/demo-repo/docs/00-A1-Align-批量导入/6A-S1-ALIGNMENT.md
+        - path: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A1-Align_批量导入/S1-ALIGNMENT.md
           kind: markdown
-        - path: /Users/eric/Public/work/code/demo-repo/docs/00-A1-Align-批量导入/6A-S1-CONSENSUS.md
+        - path: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A1-Align_批量导入/S1-CONSENSUS.md
           kind: markdown

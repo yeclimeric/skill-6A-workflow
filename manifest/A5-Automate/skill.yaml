@@ -126,7 +126,7 @@ workflow_6a:
         - id: S5.1
           name: 逐步实施子任务
           items:
-            - 创建docs/任务名/6A-S5-ACCEPTANCE.md记录完成情况
+            - 创建docs/任务名/S5-ACCEPTANCE.md记录完成情况
         - id: S5.2
           name: 代码质量要求
           items:
@@ -158,8 +158,7 @@ technical_execution_spec:
       - API密钥等敏感信息使用.env文件管理
   docs_sync:
     rules:
-      - docs_dir命名使用docs_dir_naming，模板{seq}-{stage_full}-{task_name}
-      - 文档文件名前缀使用docs_dir_naming.rules.doc_file_prefix
+      - docs_dir命名使用docs_dir_naming，模板6A-{seq}-{stage_full}_{task_name}
       - 代码变更同时更新相关文档
   testing_strategy:
     rules:
@@ -194,7 +193,7 @@ examples:
       docs_dir_prefix_width: 2
     output:
       stage: S5
-      docs_dir: /Users/eric/Public/work/code/demo-repo/docs/00-A5-Automate-批量导入
+      docs_dir: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A5-Automate_批量导入
       generated_files:
-        - path: /Users/eric/Public/work/code/demo-repo/docs/00-A5-Automate-批量导入/6A-S5-ACCEPTANCE.md
+        - path: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A5-Automate_批量导入/S5-ACCEPTANCE.md
           kind: markdown

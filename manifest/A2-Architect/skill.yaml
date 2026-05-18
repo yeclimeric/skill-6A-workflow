@@ -127,7 +127,7 @@ workflow_6a:
           name: 系统分层设计
           items:
             - 基于CONSENSUS、ALIGNMENT文档设计架构
-            - 生成docs/任务名/6A-S2-DESIGN.md
+            - 生成docs/任务名/S2-DESIGN.md
             - 包含整体架构图（mermaid绘制）
             - 包含分层设计和核心组件
             - 包含模块依赖关系图
@@ -151,8 +151,7 @@ technical_execution_spec:
       - API密钥等敏感信息使用.env文件管理
   docs_sync:
     rules:
-      - docs_dir命名使用docs_dir_naming，模板{seq}-{stage_full}-{task_name}
-      - 文档文件名前缀使用docs_dir_naming.rules.doc_file_prefix
+      - docs_dir命名使用docs_dir_naming，模板6A-{seq}-{stage_full}_{task_name}
       - 代码变更同时更新相关文档
   testing_strategy:
     rules:
@@ -187,7 +186,7 @@ examples:
       docs_dir_prefix_width: 2
     output:
       stage: S2
-      docs_dir: /Users/eric/Public/work/code/demo-repo/docs/00-A2-Architect-批量导入
+      docs_dir: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A2-Architect_批量导入
       generated_files:
-        - path: /Users/eric/Public/work/code/demo-repo/docs/00-A2-Architect-批量导入/6A-S2-DESIGN.md
+        - path: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A2-Architect_批量导入/S2-DESIGN.md
           kind: markdown
