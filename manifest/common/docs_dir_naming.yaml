@@ -1,0 +1,61 @@
+schema_id: 6a.subskill.docs_dir_naming.v1
+subskill:
+  name: docs-dir-naming
+  version: 1.0.0
+  language: zh-CN
+  description: 生成docs阶段交付目录名与路径。
+contract:
+  input_schema:
+    type: object
+    additionalProperties: false
+    required: [repo_root, task_name, docs_root, docs_dir_prefix_width, stage_code]
+    properties:
+      repo_root:
+        type: string
+        pattern: "^/.*"
+        description: 代码仓库根目录绝对路径
+      task_name:
+        type: string
+        minLength: 1
+        maxLength: 64
+        pattern: "^[^/\\\\]+$"
+        description: 任务名
+      docs_root:
+        type: string
+        pattern: "^[^/\\\\]+$"
+        description: 文档根目录名
+      docs_dir_prefix_width:
+        type: integer
+        enum: [2, 3]
+        description: 序号宽度
+      stage_code:
+        type: string
+        enum: [A1, A2, A3, A4, A5, A6]
+        description: 6A阶段编码
+  output_schema:
+    type: object
+    additionalProperties: false
+    required: [docs_dir_name, docs_dir_path]
+    properties:
+      docs_dir_name:
+        type: string
+        pattern: "^[0-9]{2,3}-A[1-6]-[A-Za-z]+-[^/\\\\]+$"
+        description: docs一级子目录名
+      docs_dir_path:
+        type: string
+        pattern: "^/.*"
+        description: docs一级子目录绝对路径
+rules:
+  stage_full_name_map:
+    A1: A1-Align
+    A2: A2-Architect
+    A3: A3-Atomize
+    A4: A4-Approve
+    A5: A5-Automate
+    A6: A6-Assess
+  docs_dir_name_template: "{seq}-{stage_full}-{task_name}"
+  seq_source: "docs_root下一级子目录最大序号+1"
+  seq_start: 0
+  seq_pad:
+    width_from: docs_dir_prefix_width
+    pad_char: "0"

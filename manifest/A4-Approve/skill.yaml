@@ -1,19 +1,23 @@
 schema_id: 6a.skill.spec.v1
 skill:
-  name: skill-6a-workflow-a6
-  display_name: 6A-A6-评估
+  name: skill-6a-workflow-a4
+  display_name: 6A-A4-审批
   version: 1.0.0
-  stage: A6
+  stage: A4
   language: zh-CN
   type: prompt
   entrypoint:
     kind: markdown
     path: docs/source/6A.md
-  description: 6A阶段6评估（Assess）：输出验收结论、质量评估与最终交付物清单。
+  description: 6A阶段4审批（Approve）：输出可执行检查清单与最终确认清单。
   tags:
     - 6A
-    - A6
-    - assess
+    - A4
+    - approve
+subskills:
+  docs_dir_naming:
+    path: manifest/common/docs_dir_naming.yaml
+    stage_code: A4
 contract:
   input_schema:
     type: object
@@ -37,7 +41,7 @@ contract:
         description: 用户原始需求文本
       stage:
         type: string
-        enum: ["S6"]
+        enum: ["S4"]
         description: 目标阶段
       docs_root:
         type: string
@@ -56,14 +60,14 @@ contract:
     properties:
       stage:
         type: string
-        enum: ["S6"]
+        enum: ["S4"]
       docs_dir:
         type: string
         pattern: "^/.*"
         description: 本次阶段交付物所在目录绝对路径
       generated_files:
         type: array
-        minItems: 3
+        minItems: 1
         items:
           type: object
           additionalProperties: false
@@ -77,10 +81,10 @@ contract:
               enum: [markdown]
 scenarios:
   enabled:
-    - id: sw_release_assess
-      description: 需要整体验收检查、质量评估指标与交付确认
-    - id: sw_final_docs
-      description: 需要输出最终总结报告与TODO清单
+    - id: sw_human_review
+      description: 原子任务需要人工审查，校验完整性/一致性/可行性/可控性/可测性
+    - id: sw_go_no_go
+      description: 需要明确最终确认清单后再进入执行
   disabled:
     - id: illegal_or_sensitive
       description: 违法违规、涉密、绕过安全控制、索取密钥/账号等请求
@@ -97,12 +101,12 @@ exceptions:
     fallback: 改用下一个可用序号；若仍失败，停止并输出需人工处理的路径清单
   - code: E6A003
     name: PREREQ_DOC_MISSING
-    when: 缺少S5-ACCEPTANCE或测试/构建结果不可用
-    fallback: 输出缺失项清单；标记BLOCKED；禁止出具最终结论
+    when: 缺少S3-TASK
+    fallback: 输出缺失文件清单；标记BLOCKED；等待补齐
   - code: E6A004
-    name: ACCEPTANCE_FAILED
-    when: 整体验收检查未通过
-    fallback: 输出失败项列表与回滚/修复建议；要求补齐后重试
+    name: REVIEW_BLOCKED
+    when: 检查清单存在未通过项
+    fallback: 输出未通过项列表与修复建议；禁止进入S5
 workflow_6a:
   activation:
     trigger:
@@ -116,45 +120,32 @@ workflow_6a:
       - 质量优先理念：每个阶段都确保高质量输出
       - 项目对齐能力：深度理解现有项目架构和约束
   execution_rules:
-    stage6_assess:
-      goal: "执行结果 → 质量评估 → 文档更新 → 交付确认"
+    stage4_approve:
+      goal: "原子任务 → 人工审查 → 迭代修改 → 按文档执行"
       steps:
-        - id: S6.1
-          name: 验证执行结果
+        - id: S4.1
+          name: 执行检查清单
           items:
-            - 更新docs/任务名/S6-ACCEPTANCE.md
-            - 整体验收检查：所有需求已实现
-            - 整体验收检查：验收标准全部满足
-            - 整体验收检查：项目编译通过
-            - 整体验收检查：所有测试通过
-            - 整体验收检查：功能完整性验证
-            - 整体验收检查：实现与设计文档一致
-        - id: S6.2
-          name: 质量评估指标
+            - 完整性：任务计划覆盖所有需求
+            - 一致性：与前期文档保持一致
+            - 可行性：技术方案确实可行
+            - 可控性：风险在可接受范围，复杂度是否可控
+            - 可测性：验收标准明确可执行
+        - id: S4.2
+          name: 最终确认清单
           items:
-            - 代码质量（规范、可读性、复杂度）
-            - 测试质量（覆盖率、用例有效性）
-            - 文档质量（完整性、准确性、一致性）
-            - 现有系统集成良好
-            - 未引入技术债务
-        - id: S6.3
-          name: 最终交付物
-          items:
-            - 生成docs/任务名/S6-FINAL_[任务名].md
-            - 生成docs/任务名/S6-TODO_[任务名].md
-        - id: S6.4
-          name: TODO询问
-          items:
-            - 询问用户TODO的解决方式
-            - 精简明确待办事宜和缺少的配置
-            - 提供有用的操作指引
+            - 明确的实现需求（无歧义）
+            - 明确的子任务定义
+            - 明确的边界和限制
+            - 明确的验收标准
+            - 代码、测试、文档质量标准
 technical_execution_spec:
   security:
     rules:
       - API密钥等敏感信息使用.env文件管理
   docs_sync:
     rules:
-      - docs目录下依据6A工作规范创建的文件夹前面需要加上序号，序号为docs目录下一级子目录最大序号+1，序号起始为00
+      - docs_dir命名使用docs_dir_naming，模板{seq}-{stage_full}-{task_name}
       - 代码变更同时更新相关文档
   testing_strategy:
     rules:
@@ -179,21 +170,17 @@ technical_execution_spec:
       - 询问并等待人工干预
       - 从中断点任务继续执行
 examples:
-  - title: A6入参出参
+  - title: A4入参出参
     input:
       repo_root: /Users/eric/Public/work/code/demo-repo
       task_name: 批量导入
       raw_requirement: "需要在现有后台增加CSV批量导入用户功能，包含模板下载、导入预校验、导入结果分页查看。"
-      stage: S6
+      stage: S4
       docs_root: docs
       docs_dir_prefix_width: 2
     output:
-      stage: S6
-      docs_dir: /Users/eric/Public/work/code/demo-repo/docs/00-批量导入
+      stage: S4
+      docs_dir: /Users/eric/Public/work/code/demo-repo/docs/00-A4-Approve-批量导入
       generated_files:
-        - path: /Users/eric/Public/work/code/demo-repo/docs/00-批量导入/S6-ACCEPTANCE.md
-          kind: markdown
-        - path: /Users/eric/Public/work/code/demo-repo/docs/00-批量导入/S6-FINAL_批量导入.md
-          kind: markdown
-        - path: /Users/eric/Public/work/code/demo-repo/docs/00-批量导入/S6-TODO_批量导入.md
+        - path: /Users/eric/Public/work/code/demo-repo/docs/00-A4-Approve-批量导入/S4-CHECKLIST.md
           kind: markdown

@@ -1,19 +1,23 @@
 schema_id: 6a.skill.spec.v1
 skill:
-  name: skill-6a-workflow-a2
-  display_name: 6A-A2-架构
+  name: skill-6a-workflow-a5
+  display_name: 6A-A5-执行
   version: 1.0.0
-  stage: A2
+  stage: A5
   language: zh-CN
   type: prompt
   entrypoint:
     kind: markdown
     path: docs/source/6A.md
-  description: 6A阶段2架构（Architect）：输出系统架构、模块设计、接口契约与异常策略。
+  description: 6A阶段5执行（Automate）：按任务依赖顺序实施、测试、验证并同步文档。
   tags:
     - 6A
-    - A2
-    - architect
+    - A5
+    - automate
+subskills:
+  docs_dir_naming:
+    path: manifest/common/docs_dir_naming.yaml
+    stage_code: A5
 contract:
   input_schema:
     type: object
@@ -37,7 +41,7 @@ contract:
         description: 用户原始需求文本
       stage:
         type: string
-        enum: ["S2"]
+        enum: ["S5"]
         description: 目标阶段
       docs_root:
         type: string
@@ -56,7 +60,7 @@ contract:
     properties:
       stage:
         type: string
-        enum: ["S2"]
+        enum: ["S5"]
       docs_dir:
         type: string
         pattern: "^/.*"
@@ -77,10 +81,10 @@ contract:
               enum: [markdown]
 scenarios:
   enabled:
-    - id: sw_arch_design
-      description: 需要分层设计、模块依赖图、接口契约与数据流向图
-    - id: sw_integration_plan
-      description: 需要与现有系统对齐的集成方案与异常处理策略
+    - id: sw_step_execute
+      description: 需要按依赖顺序逐步实现、写测试、运行验证并记录完成情况
+    - id: sw_acceptance_trace
+      description: 需要生成执行验收记录并同步文档
   disabled:
     - id: illegal_or_sensitive
       description: 违法违规、涉密、绕过安全控制、索取密钥/账号等请求
@@ -97,12 +101,12 @@ exceptions:
     fallback: 改用下一个可用序号；若仍失败，停止并输出需人工处理的路径清单
   - code: E6A003
     name: PREREQ_DOC_MISSING
-    when: 缺少S1-ALIGNMENT或S1-CONSENSUS
-    fallback: 输出缺失文件清单；标记BLOCKED；等待补齐
+    when: 缺少S4交付物或关键决策未关闭
+    fallback: 输出缺失项清单；标记BLOCKED；禁止进入执行
   - code: E6A004
-    name: TECH_DECISION_BLOCKED
-    when: 存在无法自主决策且影响架构的关键问题
-    fallback: 输出结构化问题清单；标记BLOCKED；等待人工澄清
+    name: EXECUTION_BLOCKED
+    when: 运行验证失败或出现无法决策的技术阻塞
+    fallback: 记录失败点与复现步骤；输出下一步建议；等待人工澄清后继续
 workflow_6a:
   activation:
     trigger:
@@ -116,38 +120,45 @@ workflow_6a:
       - 质量优先理念：每个阶段都确保高质量输出
       - 项目对齐能力：深度理解现有项目架构和约束
   execution_rules:
-    stage2_architect:
-      goal: "共识文档 → 系统架构 → 模块设计 → 接口规范"
+    stage5_automate:
+      goal: "按节点执行 → 编写测试 → 实现代码 → 文档同步"
       steps:
-        - id: S2.1
-          name: 系统分层设计
+        - id: S5.1
+          name: 逐步实施子任务
           items:
-            - 基于CONSENSUS、ALIGNMENT文档设计架构
-            - 生成docs/任务名/S2-DESIGN.md
-            - 包含整体架构图（mermaid绘制）
-            - 包含分层设计和核心组件
-            - 包含模块依赖关系图
-            - 包含接口契约定义
-            - 包含数据流向图
-            - 包含异常处理策略
-        - id: S2.2
-          name: 设计原则
+            - 创建docs/任务名/S5-ACCEPTANCE.md记录完成情况
+        - id: S5.2
+          name: 代码质量要求
           items:
-            - 严格按照任务范围，避免过度设计
-            - 确保与现有系统架构一致
-            - 复用现有组件和模式
-      quality_gates:
-        - 架构图清晰准确
-        - 接口定义完整
-        - 与现有系统无冲突
-        - 设计可行性验证
+            - 严格遵循项目现有代码规范
+            - 保持与现有代码风格一致
+            - 使用项目现有的工具和库
+            - 复用项目现有组件
+            - 代码尽量精简易读
+            - API KEY放到.env文件中并且不要提交git
+        - id: S5.3
+          name: 异常处理
+          items:
+            - 遇到不确定问题立刻中断执行
+            - 在TASK文档中记录问题详细信息和位置
+            - 寻求人工澄清后继续
+        - id: S5.4
+          name: 逐步实施流程
+          items:
+            - 按任务依赖顺序执行
+            - 执行前检查（验证输入契约、环境准备、依赖满足）
+            - 实现核心逻辑（按设计文档编写代码）
+            - 编写单元测试（边界条件、异常情况）
+            - 运行验证测试
+            - 更新相关文档
+            - 每完成一个任务立即验证
 technical_execution_spec:
   security:
     rules:
       - API密钥等敏感信息使用.env文件管理
   docs_sync:
     rules:
-      - docs目录下依据6A工作规范创建的文件夹前面需要加上序号，序号为docs目录下一级子目录最大序号+1，序号起始为00
+      - docs_dir命名使用docs_dir_naming，模板{seq}-{stage_full}-{task_name}
       - 代码变更同时更新相关文档
   testing_strategy:
     rules:
@@ -172,17 +183,17 @@ technical_execution_spec:
       - 询问并等待人工干预
       - 从中断点任务继续执行
 examples:
-  - title: A2入参出参
+  - title: A5入参出参
     input:
       repo_root: /Users/eric/Public/work/code/demo-repo
       task_name: 批量导入
       raw_requirement: "需要在现有后台增加CSV批量导入用户功能，包含模板下载、导入预校验、导入结果分页查看。"
-      stage: S2
+      stage: S5
       docs_root: docs
       docs_dir_prefix_width: 2
     output:
-      stage: S2
-      docs_dir: /Users/eric/Public/work/code/demo-repo/docs/00-批量导入
+      stage: S5
+      docs_dir: /Users/eric/Public/work/code/demo-repo/docs/00-A5-Automate-批量导入
       generated_files:
-        - path: /Users/eric/Public/work/code/demo-repo/docs/00-批量导入/S2-DESIGN.md
+        - path: /Users/eric/Public/work/code/demo-repo/docs/00-A5-Automate-批量导入/S5-ACCEPTANCE.md
           kind: markdown

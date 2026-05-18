@@ -1,19 +1,23 @@
 schema_id: 6a.skill.spec.v1
 skill:
-  name: skill-6a-workflow-a4
-  display_name: 6A-A4-审批
+  name: skill-6a-workflow-a2
+  display_name: 6A-A2-架构
   version: 1.0.0
-  stage: A4
+  stage: A2
   language: zh-CN
   type: prompt
   entrypoint:
     kind: markdown
     path: docs/source/6A.md
-  description: 6A阶段4审批（Approve）：输出可执行检查清单与最终确认清单。
+  description: 6A阶段2架构（Architect）：输出系统架构、模块设计、接口契约与异常策略。
   tags:
     - 6A
-    - A4
-    - approve
+    - A2
+    - architect
+subskills:
+  docs_dir_naming:
+    path: manifest/common/docs_dir_naming.yaml
+    stage_code: A2
 contract:
   input_schema:
     type: object
@@ -37,7 +41,7 @@ contract:
         description: 用户原始需求文本
       stage:
         type: string
-        enum: ["S4"]
+        enum: ["S2"]
         description: 目标阶段
       docs_root:
         type: string
@@ -56,7 +60,7 @@ contract:
     properties:
       stage:
         type: string
-        enum: ["S4"]
+        enum: ["S2"]
       docs_dir:
         type: string
         pattern: "^/.*"
@@ -77,10 +81,10 @@ contract:
               enum: [markdown]
 scenarios:
   enabled:
-    - id: sw_human_review
-      description: 原子任务需要人工审查，校验完整性/一致性/可行性/可控性/可测性
-    - id: sw_go_no_go
-      description: 需要明确最终确认清单后再进入执行
+    - id: sw_arch_design
+      description: 需要分层设计、模块依赖图、接口契约与数据流向图
+    - id: sw_integration_plan
+      description: 需要与现有系统对齐的集成方案与异常处理策略
   disabled:
     - id: illegal_or_sensitive
       description: 违法违规、涉密、绕过安全控制、索取密钥/账号等请求
@@ -97,12 +101,12 @@ exceptions:
     fallback: 改用下一个可用序号；若仍失败，停止并输出需人工处理的路径清单
   - code: E6A003
     name: PREREQ_DOC_MISSING
-    when: 缺少S3-TASK
+    when: 缺少S1-ALIGNMENT或S1-CONSENSUS
     fallback: 输出缺失文件清单；标记BLOCKED；等待补齐
   - code: E6A004
-    name: REVIEW_BLOCKED
-    when: 检查清单存在未通过项
-    fallback: 输出未通过项列表与修复建议；禁止进入S5
+    name: TECH_DECISION_BLOCKED
+    when: 存在无法自主决策且影响架构的关键问题
+    fallback: 输出结构化问题清单；标记BLOCKED；等待人工澄清
 workflow_6a:
   activation:
     trigger:
@@ -116,32 +120,38 @@ workflow_6a:
       - 质量优先理念：每个阶段都确保高质量输出
       - 项目对齐能力：深度理解现有项目架构和约束
   execution_rules:
-    stage4_approve:
-      goal: "原子任务 → 人工审查 → 迭代修改 → 按文档执行"
+    stage2_architect:
+      goal: "共识文档 → 系统架构 → 模块设计 → 接口规范"
       steps:
-        - id: S4.1
-          name: 执行检查清单
+        - id: S2.1
+          name: 系统分层设计
           items:
-            - 完整性：任务计划覆盖所有需求
-            - 一致性：与前期文档保持一致
-            - 可行性：技术方案确实可行
-            - 可控性：风险在可接受范围，复杂度是否可控
-            - 可测性：验收标准明确可执行
-        - id: S4.2
-          name: 最终确认清单
+            - 基于CONSENSUS、ALIGNMENT文档设计架构
+            - 生成docs/任务名/S2-DESIGN.md
+            - 包含整体架构图（mermaid绘制）
+            - 包含分层设计和核心组件
+            - 包含模块依赖关系图
+            - 包含接口契约定义
+            - 包含数据流向图
+            - 包含异常处理策略
+        - id: S2.2
+          name: 设计原则
           items:
-            - 明确的实现需求（无歧义）
-            - 明确的子任务定义
-            - 明确的边界和限制
-            - 明确的验收标准
-            - 代码、测试、文档质量标准
+            - 严格按照任务范围，避免过度设计
+            - 确保与现有系统架构一致
+            - 复用现有组件和模式
+      quality_gates:
+        - 架构图清晰准确
+        - 接口定义完整
+        - 与现有系统无冲突
+        - 设计可行性验证
 technical_execution_spec:
   security:
     rules:
       - API密钥等敏感信息使用.env文件管理
   docs_sync:
     rules:
-      - docs目录下依据6A工作规范创建的文件夹前面需要加上序号，序号为docs目录下一级子目录最大序号+1，序号起始为00
+      - docs_dir命名使用docs_dir_naming，模板{seq}-{stage_full}-{task_name}
       - 代码变更同时更新相关文档
   testing_strategy:
     rules:
@@ -166,17 +176,17 @@ technical_execution_spec:
       - 询问并等待人工干预
       - 从中断点任务继续执行
 examples:
-  - title: A4入参出参
+  - title: A2入参出参
     input:
       repo_root: /Users/eric/Public/work/code/demo-repo
       task_name: 批量导入
       raw_requirement: "需要在现有后台增加CSV批量导入用户功能，包含模板下载、导入预校验、导入结果分页查看。"
-      stage: S4
+      stage: S2
       docs_root: docs
       docs_dir_prefix_width: 2
     output:
-      stage: S4
-      docs_dir: /Users/eric/Public/work/code/demo-repo/docs/00-批量导入
+      stage: S2
+      docs_dir: /Users/eric/Public/work/code/demo-repo/docs/00-A2-Architect-批量导入
       generated_files:
-        - path: /Users/eric/Public/work/code/demo-repo/docs/00-批量导入/S4-CHECKLIST.md
+        - path: /Users/eric/Public/work/code/demo-repo/docs/00-A2-Architect-批量导入/S2-DESIGN.md
           kind: markdown

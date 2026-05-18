@@ -1,5 +1,5 @@
 stage: S5
-docs_dir: /Users/eric/Public/work/code/demo-repo/docs/00-批量导入
+docs_dir: /Users/eric/Public/work/code/demo-repo/docs/00-A5-Automate-批量导入
 generated_files:
-  - path: /Users/eric/Public/work/code/demo-repo/docs/00-批量导入/S5-ACCEPTANCE.md
+  - path: /Users/eric/Public/work/code/demo-repo/docs/00-A5-Automate-批量导入/S5-ACCEPTANCE.md
     kind: markdown

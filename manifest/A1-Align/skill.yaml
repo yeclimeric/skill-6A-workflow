@@ -1,24 +1,32 @@
 schema_id: 6a.skill.spec.v1
 skill:
-  name: skill-6a-workflow-a3
-  display_name: 6A-A3-拆分
+  name: skill-6a-workflow-a1
+  display_name: 6A-A1-对齐
   version: 1.0.0
-  stage: A3
+  stage: A1
   language: zh-CN
   type: prompt
   entrypoint:
     kind: markdown
     path: docs/source/6A.md
-  description: 6A阶段3原子化（Atomize）：输出可独立验证的任务拆分与依赖关系。
+  description: 6A阶段1对齐（Align）：输出精确规范与可测试验收标准。
   tags:
     - 6A
-    - A3
-    - atomize
+    - A1
+    - align
+subskills:
+  docs_dir_naming:
+    path: manifest/common/docs_dir_naming.yaml
+    stage_code: A1
 contract:
   input_schema:
     type: object
     additionalProperties: false
-    required: [repo_root, task_name, raw_requirement, stage]
+    required:
+      - repo_root
+      - task_name
+      - raw_requirement
+      - stage
     properties:
       repo_root:
         type: string
@@ -37,7 +45,7 @@ contract:
         description: 用户原始需求文本
       stage:
         type: string
-        enum: ["S3"]
+        enum: ["S1"]
         description: 目标阶段
       docs_root:
         type: string
@@ -52,18 +60,21 @@ contract:
   output_schema:
     type: object
     additionalProperties: false
-    required: [stage, docs_dir, generated_files]
+    required:
+      - stage
+      - docs_dir
+      - generated_files
     properties:
       stage:
         type: string
-        enum: ["S3"]
+        enum: ["S1"]
       docs_dir:
         type: string
         pattern: "^/.*"
         description: 本次阶段交付物所在目录绝对路径
       generated_files:
         type: array
-        minItems: 1
+        minItems: 2
         items:
           type: object
           additionalProperties: false
@@ -77,10 +88,10 @@ contract:
               enum: [markdown]
 scenarios:
   enabled:
-    - id: sw_task_atomize
-      description: 需要将架构设计拆分为原子任务，定义输入输出契约与依赖图
-    - id: sw_parallel_planning
-      description: 需要识别并行任务、后置任务与依赖顺序
+    - id: sw_feature_alignment
+      description: 功能需求需要边界确认、疑问澄清、验收标准落地
+    - id: sw_bugfix_alignment
+      description: 缺陷修复需要复现条件、影响面与验收标准固化
   disabled:
     - id: illegal_or_sensitive
       description: 违法违规、涉密、绕过安全控制、索取密钥/账号等请求
@@ -96,13 +107,13 @@ exceptions:
     when: docs目录序号生成冲突或目标目录不可写
     fallback: 改用下一个可用序号；若仍失败，停止并输出需人工处理的路径清单
   - code: E6A003
-    name: PREREQ_DOC_MISSING
-    when: 缺少S2-DESIGN
-    fallback: 输出缺失文件清单；标记BLOCKED；等待补齐
+    name: STAGE_INPUT_MISSING
+    when: 必填入参缺失或为空
+    fallback: 返回错误并给出缺失字段列表；不写入任何文件
   - code: E6A004
-    name: TASK_DEP_CYCLE
-    when: 任务依赖关系存在循环
-    fallback: 返回循环依赖路径；要求调整拆分后重试
+    name: TECH_DECISION_BLOCKED
+    when: 存在无法自主决策且影响验收/方案的关键问题
+    fallback: 输出结构化问题清单；标记BLOCKED；等待人工澄清
 workflow_6a:
   activation:
     trigger:
@@ -116,40 +127,54 @@ workflow_6a:
       - 质量优先理念：每个阶段都确保高质量输出
       - 项目对齐能力：深度理解现有项目架构和约束
   execution_rules:
-    stage3_atomize:
-      goal: "架构设计 → 拆分任务 → 明确接口 → 依赖关系"
+    stage1_align:
+      goal: "模糊需求 → 精确规范"
       steps:
-        - id: S3.1
-          name: 子任务拆分
+        - id: S1.1
+          name: 项目上下文分析
           items:
-            - 基于DESIGN文档生成docs/任务名/S3-TASK.md
-            - 每个原子任务包含输入契约（前置依赖、输入数据、环境依赖）
-            - 每个原子任务包含输出契约（输出数据、交付物、验收标准）
-            - 每个原子任务包含实现约束（技术栈、接口规范、质量要求）
-            - 每个原子任务包含依赖关系（后置任务、并行任务）
-        - id: S3.2
-          name: 拆分原则
+            - 分析现有项目结构、技术栈、架构模式、依赖关系
+            - 分析现有代码模式、现有文档和约定
+            - 理解业务域和数据模型
+        - id: S1.2
+          name: 需求理解确认
           items:
-            - 复杂度可控，便于AI高成功率交付
-            - 按功能模块分解，确保任务原子性和独立性
-            - 有明确的验收标准，尽量可以独立编译和测试
-            - 依赖关系清晰
-        - id: S3.3
-          name: 生成任务依赖图
+            - 创建docs/任务名/S1-ALIGNMENT.md
+            - 包含项目和任务特性规范
+            - 包含原始需求、边界确认、需求理解、疑问澄清
+        - id: S1.3
+          name: 智能决策策略
           items:
-            - 使用mermaid
+            - 自动识别歧义和不确定性
+            - 生成结构化问题清单（按优先级排序）
+            - 优先基于现有项目内容和查找类似工程和行业知识进行决策并在文档中回答
+            - 有人员倾向或不确定的问题主动中断并询问关键决策点
+            - 基于回答更新理解和规范
+        - id: S1.4
+          name: 中断并询问关键决策点
+          items:
+            - 主动中断询问，迭代执行智能决策策略
+        - id: S1.5
+          name: 最终共识
+          items:
+            - 生成docs/XX-任务名/S1-CONSENSUS.md
+            - 包含明确的需求描述和验收标准
+            - 包含技术实现方案和技术约束和集成方案
+            - 包含任务边界限制和验收标准
+            - 确认所有不确定性已解决
       quality_gates:
-        - 任务覆盖完整需求
-        - 依赖关系无循环
-        - 每个任务都可独立验证
-        - 复杂度评估合理
+        - 需求边界清晰无歧义
+        - 技术方案与现有架构对齐
+        - 验收标准具体可测试
+        - 所有关键假设已确认
+        - 项目特性规范已对齐
 technical_execution_spec:
   security:
     rules:
       - API密钥等敏感信息使用.env文件管理
   docs_sync:
     rules:
-      - docs目录下依据6A工作规范创建的文件夹前面需要加上序号，序号为docs目录下一级子目录最大序号+1，序号起始为00
+      - docs_dir命名使用docs_dir_naming，模板{seq}-{stage_full}-{task_name}
       - 代码变更同时更新相关文档
   testing_strategy:
     rules:
@@ -174,17 +199,19 @@ technical_execution_spec:
       - 询问并等待人工干预
       - 从中断点任务继续执行
 examples:
-  - title: A3入参出参
+  - title: A1入参出参
     input:
       repo_root: /Users/eric/Public/work/code/demo-repo
       task_name: 批量导入
       raw_requirement: "需要在现有后台增加CSV批量导入用户功能，包含模板下载、导入预校验、导入结果分页查看。"
-      stage: S3
+      stage: S1
       docs_root: docs
       docs_dir_prefix_width: 2
     output:
-      stage: S3
-      docs_dir: /Users/eric/Public/work/code/demo-repo/docs/00-批量导入
+      stage: S1
+      docs_dir: /Users/eric/Public/work/code/demo-repo/docs/00-A1-Align-批量导入
       generated_files:
-        - path: /Users/eric/Public/work/code/demo-repo/docs/00-批量导入/S3-TASK.md
+        - path: /Users/eric/Public/work/code/demo-repo/docs/00-A1-Align-批量导入/S1-ALIGNMENT.md
+          kind: markdown
+        - path: /Users/eric/Public/work/code/demo-repo/docs/00-A1-Align-批量导入/S1-CONSENSUS.md
           kind: markdown
