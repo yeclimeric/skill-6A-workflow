@@ -11,9 +11,12 @@ contract:
     required: [repo_root, task_name, docs_root, docs_dir_prefix_width, stage_code]
     properties:
       repo_root:
-        type: string
-        pattern: "^/.*"
-        description: 代码仓库根目录绝对路径
+        anyOf:
+          - type: string
+            pattern: "^/.*"
+          - type: string
+            pattern: "^(\\./|\\.\\./).+"
+        description: 代码仓库根目录路径（绝对路径或相对路径）
       task_name:
         type: string
         minLength: 1
@@ -42,9 +45,12 @@ contract:
         pattern: "^6A-[0-9]{2,3}-A[1-6]-[A-Za-z]+_[^/\\\\]+$"
         description: docs一级子目录名
       docs_dir_path:
-        type: string
-        pattern: "^/.*"
-        description: docs一级子目录绝对路径
+        anyOf:
+          - type: string
+            pattern: "^/.*"
+          - type: string
+            pattern: "^(\\./|\\.\\./).+"
+        description: docs一级子目录路径（绝对路径或相对路径）
 rules:
   stage_full_name_map:
     A1: A1-Align

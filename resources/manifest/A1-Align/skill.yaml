@@ -29,9 +29,12 @@ contract:
       - stage
     properties:
       repo_root:
-        type: string
-        pattern: "^/.*"
-        description: 代码仓库根目录绝对路径
+        anyOf:
+          - type: string
+            pattern: "^/.*"
+          - type: string
+            pattern: "^(\\./|\\.\\./).+"
+        description: 代码仓库根目录路径（绝对路径或相对路径）
       task_name:
         type: string
         minLength: 1
@@ -69,9 +72,12 @@ contract:
         type: string
         enum: ["S1"]
       docs_dir:
-        type: string
-        pattern: "^/.*"
-        description: 本次阶段交付物所在目录绝对路径
+        anyOf:
+          - type: string
+            pattern: "^/.*"
+          - type: string
+            pattern: "^(\\./|\\.\\./).+"
+        description: 本次阶段交付物所在目录路径（绝对路径或相对路径）
       generated_files:
         type: array
         minItems: 2
@@ -81,8 +87,11 @@ contract:
           required: [path, kind]
           properties:
             path:
-              type: string
-              pattern: "^/.*"
+              anyOf:
+                - type: string
+                  pattern: "^/.*"
+                - type: string
+                  pattern: "^(\\./|\\.\\./).+"
             kind:
               type: string
               enum: [markdown]
@@ -201,7 +210,7 @@ technical_execution_spec:
 examples:
   - title: A1入参出参
     input:
-      repo_root: /Users/eric/Public/work/code/demo-repo
+      repo_root: ./demo-repo
       task_name: 批量导入
       raw_requirement: "需要在现有后台增加CSV批量导入用户功能，包含模板下载、导入预校验、导入结果分页查看。"
       stage: S1
@@ -209,9 +218,9 @@ examples:
       docs_dir_prefix_width: 2
     output:
       stage: S1
-      docs_dir: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A1-Align_批量导入
+      docs_dir: ./docs/6A-00-A1-Align_批量导入
       generated_files:
-        - path: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A1-Align_批量导入/S1-ALIGNMENT.md
+        - path: ./docs/6A-00-A1-Align_批量导入/S1-ALIGNMENT.md
           kind: markdown
-        - path: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A1-Align_批量导入/S1-CONSENSUS.md
+        - path: ./docs/6A-00-A1-Align_批量导入/S1-CONSENSUS.md
           kind: markdown

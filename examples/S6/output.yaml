@@ -1,9 +1,9 @@
 stage: S6
-docs_dir: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A6-Assess_批量导入
+docs_dir: ./docs/6A-00-A6-Assess_批量导入
 generated_files:
-  - path: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A6-Assess_批量导入/S6-ACCEPTANCE.md
+  - path: ./docs/6A-00-A6-Assess_批量导入/S6-ACCEPTANCE.md
     kind: markdown
-  - path: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A6-Assess_批量导入/S6-FINAL_批量导入.md
+  - path: ./docs/6A-00-A6-Assess_批量导入/S6-FINAL_批量导入.md
     kind: markdown
-  - path: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A6-Assess_批量导入/S6-TODO_批量导入.md
+  - path: ./docs/6A-00-A6-Assess_批量导入/S6-TODO_批量导入.md
     kind: markdown
