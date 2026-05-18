@@ -1,28 +1,32 @@
 schema_id: 6a.skill.spec.v1
 skill:
-  name: skill-6a-workflow-a4
-  display_name: 6A-A4-审批
+  name: skill-6a-workflow-a1
+  display_name: 6A-A1-对齐
   version: 1.0.0
-  stage: A4
+  stage: A1
   language: zh-CN
   type: prompt
   entrypoint:
     kind: markdown
-    path: docs/source/6A.md
-  description: 6A阶段4审批（Approve）：输出可执行检查清单与最终确认清单。
+    path: resources/prompt.md
+  description: 6A阶段1对齐（Align）：输出精确规范与可测试验收标准。
   tags:
     - 6A
-    - A4
-    - approve
+    - A1
+    - align
 subskills:
   docs_dir_naming:
-    path: manifest/common/docs_dir_naming.yaml
-    stage_code: A4
+    path: resources/manifest/common/docs_dir_naming.yaml
+    stage_code: A1
 contract:
   input_schema:
     type: object
     additionalProperties: false
-    required: [repo_root, task_name, raw_requirement, stage]
+    required:
+      - repo_root
+      - task_name
+      - raw_requirement
+      - stage
     properties:
       repo_root:
         type: string
@@ -41,7 +45,7 @@ contract:
         description: 用户原始需求文本
       stage:
         type: string
-        enum: ["S4"]
+        enum: ["S1"]
         description: 目标阶段
       docs_root:
         type: string
@@ -56,18 +60,21 @@ contract:
   output_schema:
     type: object
     additionalProperties: false
-    required: [stage, docs_dir, generated_files]
+    required:
+      - stage
+      - docs_dir
+      - generated_files
     properties:
       stage:
         type: string
-        enum: ["S4"]
+        enum: ["S1"]
       docs_dir:
         type: string
         pattern: "^/.*"
         description: 本次阶段交付物所在目录绝对路径
       generated_files:
         type: array
-        minItems: 1
+        minItems: 2
         items:
           type: object
           additionalProperties: false
@@ -81,10 +88,10 @@ contract:
               enum: [markdown]
 scenarios:
   enabled:
-    - id: sw_human_review
-      description: 原子任务需要人工审查，校验完整性/一致性/可行性/可控性/可测性
-    - id: sw_go_no_go
-      description: 需要明确最终确认清单后再进入执行
+    - id: sw_feature_alignment
+      description: 功能需求需要边界确认、疑问澄清、验收标准落地
+    - id: sw_bugfix_alignment
+      description: 缺陷修复需要复现条件、影响面与验收标准固化
   disabled:
     - id: illegal_or_sensitive
       description: 违法违规、涉密、绕过安全控制、索取密钥/账号等请求
@@ -100,13 +107,13 @@ exceptions:
     when: docs目录序号生成冲突或目标目录不可写
     fallback: 改用下一个可用序号；若仍失败，停止并输出需人工处理的路径清单
   - code: E6A003
-    name: PREREQ_DOC_MISSING
-    when: 缺少S3-TASK
-    fallback: 输出缺失文件清单；标记BLOCKED；等待补齐
+    name: STAGE_INPUT_MISSING
+    when: 必填入参缺失或为空
+    fallback: 返回错误并给出缺失字段列表；不写入任何文件
   - code: E6A004
-    name: REVIEW_BLOCKED
-    when: 检查清单存在未通过项
-    fallback: 输出未通过项列表与修复建议；禁止进入S5
+    name: TECH_DECISION_BLOCKED
+    when: 存在无法自主决策且影响验收/方案的关键问题
+    fallback: 输出结构化问题清单；标记BLOCKED；等待人工澄清
 workflow_6a:
   activation:
     trigger:
@@ -120,25 +127,47 @@ workflow_6a:
       - 质量优先理念：每个阶段都确保高质量输出
       - 项目对齐能力：深度理解现有项目架构和约束
   execution_rules:
-    stage4_approve:
-      goal: "原子任务 → 人工审查 → 迭代修改 → 按文档执行"
+    stage1_align:
+      goal: "模糊需求 → 精确规范"
       steps:
-        - id: S4.1
-          name: 执行检查清单
+        - id: S1.1
+          name: 项目上下文分析
           items:
-            - 完整性：任务计划覆盖所有需求
-            - 一致性：与前期文档保持一致
-            - 可行性：技术方案确实可行
-            - 可控性：风险在可接受范围，复杂度是否可控
-            - 可测性：验收标准明确可执行
-        - id: S4.2
-          name: 最终确认清单
+            - 分析现有项目结构、技术栈、架构模式、依赖关系
+            - 分析现有代码模式、现有文档和约定
+            - 理解业务域和数据模型
+        - id: S1.2
+          name: 需求理解确认
           items:
-            - 明确的实现需求（无歧义）
-            - 明确的子任务定义
-            - 明确的边界和限制
-            - 明确的验收标准
-            - 代码、测试、文档质量标准
+            - 创建docs/任务名/S1-ALIGNMENT.md
+            - 包含项目和任务特性规范
+            - 包含原始需求、边界确认、需求理解、疑问澄清
+        - id: S1.3
+          name: 智能决策策略
+          items:
+            - 自动识别歧义和不确定性
+            - 生成结构化问题清单（按优先级排序）
+            - 优先基于现有项目内容和查找类似工程和行业知识进行决策并在文档中回答
+            - 有人员倾向或不确定的问题主动中断并询问关键决策点
+            - 基于回答更新理解和规范
+        - id: S1.4
+          name: 中断并询问关键决策点
+          items:
+            - 主动中断询问，迭代执行智能决策策略
+        - id: S1.5
+          name: 最终共识
+          items:
+            - 生成docs/XX-任务名/S1-CONSENSUS.md
+            - 包含明确的需求描述和验收标准
+            - 包含技术实现方案和技术约束和集成方案
+            - 包含任务边界限制和验收标准
+            - 确认所有不确定性已解决
+      quality_gates:
+        - 需求边界清晰无歧义
+        - 技术方案与现有架构对齐
+        - 验收标准具体可测试
+        - 所有关键假设已确认
+        - 项目特性规范已对齐
 technical_execution_spec:
   security:
     rules:
@@ -170,17 +199,19 @@ technical_execution_spec:
       - 询问并等待人工干预
       - 从中断点任务继续执行
 examples:
-  - title: A4入参出参
+  - title: A1入参出参
     input:
       repo_root: /Users/eric/Public/work/code/demo-repo
       task_name: 批量导入
       raw_requirement: "需要在现有后台增加CSV批量导入用户功能，包含模板下载、导入预校验、导入结果分页查看。"
-      stage: S4
+      stage: S1
       docs_root: docs
       docs_dir_prefix_width: 2
     output:
-      stage: S4
-      docs_dir: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A4-Approve_批量导入
+      stage: S1
+      docs_dir: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A1-Align_批量导入
       generated_files:
-        - path: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A4-Approve_批量导入/S4-CHECKLIST.md
+        - path: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A1-Align_批量导入/S1-ALIGNMENT.md
+          kind: markdown
+        - path: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A1-Align_批量导入/S1-CONSENSUS.md
           kind: markdown

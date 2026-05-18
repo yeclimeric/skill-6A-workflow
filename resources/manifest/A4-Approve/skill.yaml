@@ -1,23 +1,23 @@
 schema_id: 6a.skill.spec.v1
 skill:
-  name: skill-6a-workflow-a3
-  display_name: 6A-A3-拆分
+  name: skill-6a-workflow-a4
+  display_name: 6A-A4-审批
   version: 1.0.0
-  stage: A3
+  stage: A4
   language: zh-CN
   type: prompt
   entrypoint:
     kind: markdown
-    path: docs/source/6A.md
-  description: 6A阶段3原子化（Atomize）：输出可独立验证的任务拆分与依赖关系。
+    path: resources/prompt.md
+  description: 6A阶段4审批（Approve）：输出可执行检查清单与最终确认清单。
   tags:
     - 6A
-    - A3
-    - atomize
+    - A4
+    - approve
 subskills:
   docs_dir_naming:
-    path: manifest/common/docs_dir_naming.yaml
-    stage_code: A3
+    path: resources/manifest/common/docs_dir_naming.yaml
+    stage_code: A4
 contract:
   input_schema:
     type: object
@@ -41,7 +41,7 @@ contract:
         description: 用户原始需求文本
       stage:
         type: string
-        enum: ["S3"]
+        enum: ["S4"]
         description: 目标阶段
       docs_root:
         type: string
@@ -60,7 +60,7 @@ contract:
     properties:
       stage:
         type: string
-        enum: ["S3"]
+        enum: ["S4"]
       docs_dir:
         type: string
         pattern: "^/.*"
@@ -81,10 +81,10 @@ contract:
               enum: [markdown]
 scenarios:
   enabled:
-    - id: sw_task_atomize
-      description: 需要将架构设计拆分为原子任务，定义输入输出契约与依赖图
-    - id: sw_parallel_planning
-      description: 需要识别并行任务、后置任务与依赖顺序
+    - id: sw_human_review
+      description: 原子任务需要人工审查，校验完整性/一致性/可行性/可控性/可测性
+    - id: sw_go_no_go
+      description: 需要明确最终确认清单后再进入执行
   disabled:
     - id: illegal_or_sensitive
       description: 违法违规、涉密、绕过安全控制、索取密钥/账号等请求
@@ -101,12 +101,12 @@ exceptions:
     fallback: 改用下一个可用序号；若仍失败，停止并输出需人工处理的路径清单
   - code: E6A003
     name: PREREQ_DOC_MISSING
-    when: 缺少S2-DESIGN
+    when: 缺少S3-TASK
     fallback: 输出缺失文件清单；标记BLOCKED；等待补齐
   - code: E6A004
-    name: TASK_DEP_CYCLE
-    when: 任务依赖关系存在循环
-    fallback: 返回循环依赖路径；要求调整拆分后重试
+    name: REVIEW_BLOCKED
+    when: 检查清单存在未通过项
+    fallback: 输出未通过项列表与修复建议；禁止进入S5
 workflow_6a:
   activation:
     trigger:
@@ -120,33 +120,25 @@ workflow_6a:
       - 质量优先理念：每个阶段都确保高质量输出
       - 项目对齐能力：深度理解现有项目架构和约束
   execution_rules:
-    stage3_atomize:
-      goal: "架构设计 → 拆分任务 → 明确接口 → 依赖关系"
+    stage4_approve:
+      goal: "原子任务 → 人工审查 → 迭代修改 → 按文档执行"
       steps:
-        - id: S3.1
-          name: 子任务拆分
+        - id: S4.1
+          name: 执行检查清单
           items:
-            - 基于DESIGN文档生成docs/任务名/S3-TASK.md
-            - 每个原子任务包含输入契约（前置依赖、输入数据、环境依赖）
-            - 每个原子任务包含输出契约（输出数据、交付物、验收标准）
-            - 每个原子任务包含实现约束（技术栈、接口规范、质量要求）
-            - 每个原子任务包含依赖关系（后置任务、并行任务）
-        - id: S3.2
-          name: 拆分原则
+            - 完整性：任务计划覆盖所有需求
+            - 一致性：与前期文档保持一致
+            - 可行性：技术方案确实可行
+            - 可控性：风险在可接受范围，复杂度是否可控
+            - 可测性：验收标准明确可执行
+        - id: S4.2
+          name: 最终确认清单
           items:
-            - 复杂度可控，便于AI高成功率交付
-            - 按功能模块分解，确保任务原子性和独立性
-            - 有明确的验收标准，尽量可以独立编译和测试
-            - 依赖关系清晰
-        - id: S3.3
-          name: 生成任务依赖图
-          items:
-            - 使用mermaid
-      quality_gates:
-        - 任务覆盖完整需求
-        - 依赖关系无循环
-        - 每个任务都可独立验证
-        - 复杂度评估合理
+            - 明确的实现需求（无歧义）
+            - 明确的子任务定义
+            - 明确的边界和限制
+            - 明确的验收标准
+            - 代码、测试、文档质量标准
 technical_execution_spec:
   security:
     rules:
@@ -178,17 +170,17 @@ technical_execution_spec:
       - 询问并等待人工干预
       - 从中断点任务继续执行
 examples:
-  - title: A3入参出参
+  - title: A4入参出参
     input:
       repo_root: /Users/eric/Public/work/code/demo-repo
       task_name: 批量导入
       raw_requirement: "需要在现有后台增加CSV批量导入用户功能，包含模板下载、导入预校验、导入结果分页查看。"
-      stage: S3
+      stage: S4
       docs_root: docs
       docs_dir_prefix_width: 2
     output:
-      stage: S3
-      docs_dir: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A3-Atomize_批量导入
+      stage: S4
+      docs_dir: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A4-Approve_批量导入
       generated_files:
-        - path: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A3-Atomize_批量导入/S3-TASK.md
+        - path: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A4-Approve_批量导入/S4-CHECKLIST.md
           kind: markdown

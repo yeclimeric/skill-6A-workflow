@@ -1,0 +1,14 @@
+schema_id: 6a.skill.index.v1
+skills:
+  - stage: A1
+    path: resources/manifest/A1-Align/skill.yaml
+  - stage: A2
+    path: resources/manifest/A2-Architect/skill.yaml
+  - stage: A3
+    path: resources/manifest/A3-Atomize/skill.yaml
+  - stage: A4
+    path: resources/manifest/A4-Approve/skill.yaml
+  - stage: A5
+    path: resources/manifest/A5-Automate/skill.yaml
+  - stage: A6
+    path: resources/manifest/A6-Assess/skill.yaml

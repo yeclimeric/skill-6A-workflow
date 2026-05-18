@@ -1,23 +1,23 @@
 schema_id: 6a.skill.spec.v1
 skill:
-  name: skill-6a-workflow-a2
-  display_name: 6A-A2-架构
+  name: skill-6a-workflow-a3
+  display_name: 6A-A3-拆分
   version: 1.0.0
-  stage: A2
+  stage: A3
   language: zh-CN
   type: prompt
   entrypoint:
     kind: markdown
-    path: docs/source/6A.md
-  description: 6A阶段2架构（Architect）：输出系统架构、模块设计、接口契约与异常策略。
+    path: resources/prompt.md
+  description: 6A阶段3原子化（Atomize）：输出可独立验证的任务拆分与依赖关系。
   tags:
     - 6A
-    - A2
-    - architect
+    - A3
+    - atomize
 subskills:
   docs_dir_naming:
-    path: manifest/common/docs_dir_naming.yaml
-    stage_code: A2
+    path: resources/manifest/common/docs_dir_naming.yaml
+    stage_code: A3
 contract:
   input_schema:
     type: object
@@ -41,7 +41,7 @@ contract:
         description: 用户原始需求文本
       stage:
         type: string
-        enum: ["S2"]
+        enum: ["S3"]
         description: 目标阶段
       docs_root:
         type: string
@@ -60,7 +60,7 @@ contract:
     properties:
       stage:
         type: string
-        enum: ["S2"]
+        enum: ["S3"]
       docs_dir:
         type: string
         pattern: "^/.*"
@@ -81,10 +81,10 @@ contract:
               enum: [markdown]
 scenarios:
   enabled:
-    - id: sw_arch_design
-      description: 需要分层设计、模块依赖图、接口契约与数据流向图
-    - id: sw_integration_plan
-      description: 需要与现有系统对齐的集成方案与异常处理策略
+    - id: sw_task_atomize
+      description: 需要将架构设计拆分为原子任务，定义输入输出契约与依赖图
+    - id: sw_parallel_planning
+      description: 需要识别并行任务、后置任务与依赖顺序
   disabled:
     - id: illegal_or_sensitive
       description: 违法违规、涉密、绕过安全控制、索取密钥/账号等请求
@@ -101,12 +101,12 @@ exceptions:
     fallback: 改用下一个可用序号；若仍失败，停止并输出需人工处理的路径清单
   - code: E6A003
     name: PREREQ_DOC_MISSING
-    when: 缺少S1-ALIGNMENT或S1-CONSENSUS
+    when: 缺少S2-DESIGN
     fallback: 输出缺失文件清单；标记BLOCKED；等待补齐
   - code: E6A004
-    name: TECH_DECISION_BLOCKED
-    when: 存在无法自主决策且影响架构的关键问题
-    fallback: 输出结构化问题清单；标记BLOCKED；等待人工澄清
+    name: TASK_DEP_CYCLE
+    when: 任务依赖关系存在循环
+    fallback: 返回循环依赖路径；要求调整拆分后重试
 workflow_6a:
   activation:
     trigger:
@@ -120,31 +120,33 @@ workflow_6a:
       - 质量优先理念：每个阶段都确保高质量输出
       - 项目对齐能力：深度理解现有项目架构和约束
   execution_rules:
-    stage2_architect:
-      goal: "共识文档 → 系统架构 → 模块设计 → 接口规范"
+    stage3_atomize:
+      goal: "架构设计 → 拆分任务 → 明确接口 → 依赖关系"
       steps:
-        - id: S2.1
-          name: 系统分层设计
+        - id: S3.1
+          name: 子任务拆分
           items:
-            - 基于CONSENSUS、ALIGNMENT文档设计架构
-            - 生成docs/任务名/S2-DESIGN.md
-            - 包含整体架构图（mermaid绘制）
-            - 包含分层设计和核心组件
-            - 包含模块依赖关系图
-            - 包含接口契约定义
-            - 包含数据流向图
-            - 包含异常处理策略
-        - id: S2.2
-          name: 设计原则
+            - 基于DESIGN文档生成docs/任务名/S3-TASK.md
+            - 每个原子任务包含输入契约（前置依赖、输入数据、环境依赖）
+            - 每个原子任务包含输出契约（输出数据、交付物、验收标准）
+            - 每个原子任务包含实现约束（技术栈、接口规范、质量要求）
+            - 每个原子任务包含依赖关系（后置任务、并行任务）
+        - id: S3.2
+          name: 拆分原则
           items:
-            - 严格按照任务范围，避免过度设计
-            - 确保与现有系统架构一致
-            - 复用现有组件和模式
+            - 复杂度可控，便于AI高成功率交付
+            - 按功能模块分解，确保任务原子性和独立性
+            - 有明确的验收标准，尽量可以独立编译和测试
+            - 依赖关系清晰
+        - id: S3.3
+          name: 生成任务依赖图
+          items:
+            - 使用mermaid
       quality_gates:
-        - 架构图清晰准确
-        - 接口定义完整
-        - 与现有系统无冲突
-        - 设计可行性验证
+        - 任务覆盖完整需求
+        - 依赖关系无循环
+        - 每个任务都可独立验证
+        - 复杂度评估合理
 technical_execution_spec:
   security:
     rules:
@@ -176,17 +178,17 @@ technical_execution_spec:
       - 询问并等待人工干预
       - 从中断点任务继续执行
 examples:
-  - title: A2入参出参
+  - title: A3入参出参
     input:
       repo_root: /Users/eric/Public/work/code/demo-repo
       task_name: 批量导入
       raw_requirement: "需要在现有后台增加CSV批量导入用户功能，包含模板下载、导入预校验、导入结果分页查看。"
-      stage: S2
+      stage: S3
       docs_root: docs
       docs_dir_prefix_width: 2
     output:
-      stage: S2
-      docs_dir: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A2-Architect_批量导入
+      stage: S3
+      docs_dir: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A3-Atomize_批量导入
       generated_files:
-        - path: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A2-Architect_批量导入/S2-DESIGN.md
+        - path: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A3-Atomize_批量导入/S3-TASK.md
           kind: markdown

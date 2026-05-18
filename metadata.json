@@ -1,0 +1,10 @@
+{
+  "name": "skill-6a-workflow",
+  "description": "标准化6A研发全流程管控，产出对齐/架构/拆分/审批/执行/评估交付物。",
+  "version": "1.0.0",
+  "author": "eric",
+  "tags": ["6A", "workflow", "software-delivery"],
+  "trigger": ["6A", "6A工作流"],
+  "category": "document",
+  "permissions": ["read_file", "write_file"]
+}

@@ -1,23 +1,23 @@
 schema_id: 6a.skill.spec.v1
 skill:
-  name: skill-6a-workflow-a6
-  display_name: 6A-A6-评估
+  name: skill-6a-workflow-a5
+  display_name: 6A-A5-执行
   version: 1.0.0
-  stage: A6
+  stage: A5
   language: zh-CN
   type: prompt
   entrypoint:
     kind: markdown
-    path: docs/source/6A.md
-  description: 6A阶段6评估（Assess）：输出验收结论、质量评估与最终交付物清单。
+    path: resources/prompt.md
+  description: 6A阶段5执行（Automate）：按任务依赖顺序实施、测试、验证并同步文档。
   tags:
     - 6A
-    - A6
-    - assess
+    - A5
+    - automate
 subskills:
   docs_dir_naming:
-    path: manifest/common/docs_dir_naming.yaml
-    stage_code: A6
+    path: resources/manifest/common/docs_dir_naming.yaml
+    stage_code: A5
 contract:
   input_schema:
     type: object
@@ -41,7 +41,7 @@ contract:
         description: 用户原始需求文本
       stage:
         type: string
-        enum: ["S6"]
+        enum: ["S5"]
         description: 目标阶段
       docs_root:
         type: string
@@ -60,14 +60,14 @@ contract:
     properties:
       stage:
         type: string
-        enum: ["S6"]
+        enum: ["S5"]
       docs_dir:
         type: string
         pattern: "^/.*"
         description: 本次阶段交付物所在目录绝对路径
       generated_files:
         type: array
-        minItems: 3
+        minItems: 1
         items:
           type: object
           additionalProperties: false
@@ -81,10 +81,10 @@ contract:
               enum: [markdown]
 scenarios:
   enabled:
-    - id: sw_release_assess
-      description: 需要整体验收检查、质量评估指标与交付确认
-    - id: sw_final_docs
-      description: 需要输出最终总结报告与TODO清单
+    - id: sw_step_execute
+      description: 需要按依赖顺序逐步实现、写测试、运行验证并记录完成情况
+    - id: sw_acceptance_trace
+      description: 需要生成执行验收记录并同步文档
   disabled:
     - id: illegal_or_sensitive
       description: 违法违规、涉密、绕过安全控制、索取密钥/账号等请求
@@ -101,12 +101,12 @@ exceptions:
     fallback: 改用下一个可用序号；若仍失败，停止并输出需人工处理的路径清单
   - code: E6A003
     name: PREREQ_DOC_MISSING
-    when: 缺少S5-ACCEPTANCE或测试/构建结果不可用
-    fallback: 输出缺失项清单；标记BLOCKED；禁止出具最终结论
+    when: 缺少S4交付物或关键决策未关闭
+    fallback: 输出缺失项清单；标记BLOCKED；禁止进入执行
   - code: E6A004
-    name: ACCEPTANCE_FAILED
-    when: 整体验收检查未通过
-    fallback: 输出失败项列表与回滚/修复建议；要求补齐后重试
+    name: EXECUTION_BLOCKED
+    when: 运行验证失败或出现无法决策的技术阻塞
+    fallback: 记录失败点与复现步骤；输出下一步建议；等待人工澄清后继续
 workflow_6a:
   activation:
     trigger:
@@ -120,38 +120,38 @@ workflow_6a:
       - 质量优先理念：每个阶段都确保高质量输出
       - 项目对齐能力：深度理解现有项目架构和约束
   execution_rules:
-    stage6_assess:
-      goal: "执行结果 → 质量评估 → 文档更新 → 交付确认"
+    stage5_automate:
+      goal: "按节点执行 → 编写测试 → 实现代码 → 文档同步"
       steps:
-        - id: S6.1
-          name: 验证执行结果
+        - id: S5.1
+          name: 逐步实施子任务
           items:
-            - 更新docs/任务名/S6-ACCEPTANCE.md
-            - 整体验收检查：所有需求已实现
-            - 整体验收检查：验收标准全部满足
-            - 整体验收检查：项目编译通过
-            - 整体验收检查：所有测试通过
-            - 整体验收检查：功能完整性验证
-            - 整体验收检查：实现与设计文档一致
-        - id: S6.2
-          name: 质量评估指标
+            - 创建docs/任务名/S5-ACCEPTANCE.md记录完成情况
+        - id: S5.2
+          name: 代码质量要求
           items:
-            - 代码质量（规范、可读性、复杂度）
-            - 测试质量（覆盖率、用例有效性）
-            - 文档质量（完整性、准确性、一致性）
-            - 现有系统集成良好
-            - 未引入技术债务
-        - id: S6.3
-          name: 最终交付物
+            - 严格遵循项目现有代码规范
+            - 保持与现有代码风格一致
+            - 使用项目现有的工具和库
+            - 复用项目现有组件
+            - 代码尽量精简易读
+            - API KEY放到.env文件中并且不要提交git
+        - id: S5.3
+          name: 异常处理
           items:
-            - 生成docs/任务名/S6-FINAL_[任务名].md
-            - 生成docs/任务名/S6-TODO_[任务名].md
-        - id: S6.4
-          name: TODO询问
+            - 遇到不确定问题立刻中断执行
+            - 在TASK文档中记录问题详细信息和位置
+            - 寻求人工澄清后继续
+        - id: S5.4
+          name: 逐步实施流程
           items:
-            - 询问用户TODO的解决方式
-            - 精简明确待办事宜和缺少的配置
-            - 提供有用的操作指引
+            - 按任务依赖顺序执行
+            - 执行前检查（验证输入契约、环境准备、依赖满足）
+            - 实现核心逻辑（按设计文档编写代码）
+            - 编写单元测试（边界条件、异常情况）
+            - 运行验证测试
+            - 更新相关文档
+            - 每完成一个任务立即验证
 technical_execution_spec:
   security:
     rules:
@@ -183,21 +183,17 @@ technical_execution_spec:
       - 询问并等待人工干预
       - 从中断点任务继续执行
 examples:
-  - title: A6入参出参
+  - title: A5入参出参
     input:
       repo_root: /Users/eric/Public/work/code/demo-repo
       task_name: 批量导入
       raw_requirement: "需要在现有后台增加CSV批量导入用户功能，包含模板下载、导入预校验、导入结果分页查看。"
-      stage: S6
+      stage: S5
       docs_root: docs
       docs_dir_prefix_width: 2
     output:
-      stage: S6
-      docs_dir: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A6-Assess_批量导入
+      stage: S5
+      docs_dir: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A5-Automate_批量导入
       generated_files:
-        - path: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A6-Assess_批量导入/S6-ACCEPTANCE.md
-          kind: markdown
-        - path: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A6-Assess_批量导入/S6-FINAL_批量导入.md
-          kind: markdown
-        - path: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A6-Assess_批量导入/S6-TODO_批量导入.md
+        - path: /Users/eric/Public/work/code/demo-repo/docs/6A-00-A5-Automate_批量导入/S5-ACCEPTANCE.md
           kind: markdown
