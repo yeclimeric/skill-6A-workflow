@@ -74,12 +74,12 @@ flowchart TD
   P6 -- 否 --> EPR6[异常 E6A003<br/>PREREQ_DOC_MISSING<br/>BLOCKED]
   P6 -- 是 --> A6[调用A6子skill<br/>A6-Assess/skill.yaml]
 
-  A1 --> DDN1[调用docs_dir_naming子skill<br/>模板: 6A-{seq}-{stage_full}_{task_name}]
-  A2 --> DDN2[调用docs_dir_naming子skill<br/>模板: 6A-{seq}-{stage_full}_{task_name}]
-  A3 --> DDN3[调用docs_dir_naming子skill<br/>模板: 6A-{seq}-{stage_full}_{task_name}]
-  A4 --> DDN4[调用docs_dir_naming子skill<br/>模板: 6A-{seq}-{stage_full}_{task_name}]
-  A5 --> DDN5[调用docs_dir_naming子skill<br/>模板: 6A-{seq}-{stage_full}_{task_name}]
-  A6 --> DDN6[调用docs_dir_naming子skill<br/>模板: 6A-{seq}-{stage_full}_{task_name}]
+  A1 --> DDN1[调用docs_dir_naming子skill<br/>模板: 6A-{seq}-{task_name}]
+  A2 --> DDN2[调用docs_dir_naming子skill<br/>模板: 6A-{seq}-{task_name}]
+  A3 --> DDN3[调用docs_dir_naming子skill<br/>模板: 6A-{seq}-{task_name}]
+  A4 --> DDN4[调用docs_dir_naming子skill<br/>模板: 6A-{seq}-{task_name}]
+  A5 --> DDN5[调用docs_dir_naming子skill<br/>模板: 6A-{seq}-{task_name}]
+  A6 --> DDN6[调用docs_dir_naming子skill<br/>模板: 6A-{seq}-{task_name}]
 
   DDN1 --> W1[写入阶段文档<br/>docs/{docs_dir}/S1-*.md]
   DDN2 --> W2[写入阶段文档<br/>docs/{docs_dir}/S2-*.md]
@@ -97,7 +97,7 @@ flowchart TD
 ```
 
 ## 输出（Output）
-- docs_dir: string，绝对路径，格式6A-seq-stage_full_taskname
+- docs_dir: string，绝对路径，格式6A-seq-task_name
 - generated_files: array，生成的阶段文档路径列表
 
 ## 注意事项（Notes）

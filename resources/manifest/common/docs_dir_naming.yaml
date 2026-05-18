@@ -42,7 +42,7 @@ contract:
     properties:
       docs_dir_name:
         type: string
-        pattern: "^6A-[0-9]{2,3}-A[1-6]-[A-Za-z]+_[^/\\\\]+$"
+        pattern: "^6A-[0-9]{2,3}-[^/\\\\]+$"
         description: docs一级子目录名
       docs_dir_path:
         anyOf:
@@ -59,8 +59,8 @@ rules:
     A4: A4-Approve
     A5: A5-Automate
     A6: A6-Assess
-  docs_dir_name_template: "6A-{seq}-{stage_full}_{task_name}"
-  seq_source: "docs_root下一级子目录最大序号+1"
+  docs_dir_name_template: "6A-{seq}-{task_name}"
+  seq_source: "若存在同task_name目录则复用其seq，否则取docs_root下一级子目录最大序号+1"
   seq_start: 0
   seq_pad:
     width_from: docs_dir_prefix_width

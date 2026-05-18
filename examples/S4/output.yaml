@@ -1,5 +1,5 @@
 stage: S4
-docs_dir: ./docs/6A-00-A4-Approve_批量导入
+docs_dir: ./docs/6A-00-批量导入
 generated_files:
-  - path: ./docs/6A-00-A4-Approve_批量导入/S4-CHECKLIST.md
+  - path: ./docs/6A-00-批量导入/S4-CHECKLIST.md
     kind: markdown

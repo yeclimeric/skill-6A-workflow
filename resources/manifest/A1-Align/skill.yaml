@@ -183,7 +183,7 @@ technical_execution_spec:
       - API密钥等敏感信息使用.env文件管理
   docs_sync:
     rules:
-      - docs_dir命名使用docs_dir_naming，模板6A-{seq}-{stage_full}_{task_name}
+      - docs_dir命名使用docs_dir_naming，模板6A-{seq}-{task_name}
       - 代码变更同时更新相关文档
   testing_strategy:
     rules:
@@ -218,9 +218,9 @@ examples:
       docs_dir_prefix_width: 2
     output:
       stage: S1
-      docs_dir: ./docs/6A-00-A1-Align_批量导入
+      docs_dir: ./docs/6A-00-批量导入
       generated_files:
-        - path: ./docs/6A-00-A1-Align_批量导入/S1-ALIGNMENT.md
+        - path: ./docs/6A-00-批量导入/S1-ALIGNMENT.md
           kind: markdown
-        - path: ./docs/6A-00-A1-Align_批量导入/S1-CONSENSUS.md
+        - path: ./docs/6A-00-批量导入/S1-CONSENSUS.md
           kind: markdown

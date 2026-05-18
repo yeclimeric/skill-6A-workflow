@@ -1,7 +1,7 @@
 stage: S1
-docs_dir: ./docs/6A-00-A1-Align_批量导入
+docs_dir: ./docs/6A-00-批量导入
 generated_files:
-  - path: ./docs/6A-00-A1-Align_批量导入/S1-ALIGNMENT.md
+  - path: ./docs/6A-00-批量导入/S1-ALIGNMENT.md
     kind: markdown
-  - path: ./docs/6A-00-A1-Align_批量导入/S1-CONSENSUS.md
+  - path: ./docs/6A-00-批量导入/S1-CONSENSUS.md
     kind: markdown
